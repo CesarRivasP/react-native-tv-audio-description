@@ -79,11 +79,11 @@ export class DescriptionAudio {
    */
   async stop(): Promise<void> {
     this.generation++; // anything in flight is now stale and must not restore
+    this.media.clips.stop();
     // Nothing speaking means the film is already at full. Ramping "back" from
     // the duck level anyway would first SET it to the duck level: an audible
     // dip every time description is switched off between cues.
     if (!this.active) return;
-    this.media.clips.stop();
     await rampVolumePct(this.media.video, this.duckPct, 100, this.rampMs);
     this.active = false;
   }
