@@ -60,6 +60,23 @@ describe('createVegaAdapter — url_mode_broken', () => {
   });
 });
 
+describe('createVegaAdapter — sourceopen_refires', () => {
+  // Fails if: 'sourceopen' is handled more than once. Per MSE, remove() or
+  // appendBuffer() on an 'ended' source reopens it and fires 'sourceopen'
+  // again; evicting after the last segment does exactly that. On the Virtual
+  // Device the second handling built another SourceBuffer, re-appended the
+  // whole asset and evicted again — a loop at the end of every film.
+  it('builds one SourceBuffer however many times the source reopens', async () => {
+    const adapter = createVegaAdapter();
+    await open(adapter);
+    const source = instances.sources[0]!;
+    source.open();
+    source.open();
+    await settle();
+    expect(source.types).toHaveLength(1);
+  });
+});
+
 describe('createVegaAdapter — surface_races_init', () => {
   // Fails if: play() starts on either signal alone. The surface arrived 26 ms
   // BEFORE initialize() resolved on the device, and playing then fails with an
@@ -104,6 +121,14 @@ describe('createVegaAdapter — the player surface', () => {
     expect(player.volume).toBe(0);
   });
 
+  // Fails if: position is NaN before the player has media. The scheduler
+  // would receive it as a seek to nowhere (seen on the device: resync pos_ms=NaN).
+  it('reports position 0 while the player has no media yet', () => {
+    const adapter = createVegaAdapter();
+    instances.players[0]!.currentTime = NaN;
+    expect(adapter.video.positionMs()).toBe(0);
+  });
+
   // Fails if: only one of the two platform events reaches onStalled, or if
   // `playing` is not exposed — then a stall is a state the UI cannot leave,
   // and MSE's spurious `waiting` at startup announces "Buffering" forever.
@@ -143,5 +168,41 @@ describe('createVegaAdapter — clips', () => {
     await playing;
     expect(clip.srcObject).not.toBeNull();
     expect(clip.src).toBe('');
+  });
+
+  // Fails if: stop() leaves the clip's promise pending. A paused AudioPlayer
+  // never emits 'ended', so the promise never settled and the player was never
+  // torn down — one leaked player per interrupted cue on the Virtual Device.
+  it('settles the clip and tears its player down when stopped', async () => {
+    const adapter = createVegaAdapter();
+    const playing = adapter.clips.play('audio/cue.m4a');
+    await settle();
+    const clip = instances.players[instances.players.length - 1] as unknown as AudioPlayer;
+    instances.sources[instances.sources.length - 1]!.open();
+    await settle();
+    await settle();
+
+    adapter.clips.stop();
+    await expect(Promise.race([playing.then(() => 'settled'), settle().then(() => 'pending')]))
+      .resolves.toBe('settled');
+    expect(clip.pause).toHaveBeenCalled();
+    expect(clip.deinitialize).toHaveBeenCalled();
+  });
+
+  // Fails if: the clip's promise waits for the player's teardown. Measured at
+  // ~130 ms on the Virtual Device, every one of them with the film still ducked.
+  it('resolves when the clip ends, without waiting for teardown', async () => {
+    const adapter = createVegaAdapter();
+    const playing = adapter.clips.play('audio/cue.m4a');
+    await settle();
+    const clip = instances.players[instances.players.length - 1] as unknown as AudioPlayer;
+    clip.deinitialize.mockImplementation(() => new Promise<void>(() => undefined));
+
+    instances.sources[instances.sources.length - 1]!.open();
+    await settle();
+    await settle();
+    clip.emit('ended');
+    await expect(Promise.race([playing.then(() => 'resolved'), settle().then(() => 'waiting')]))
+      .resolves.toBe('resolved');
   });
 });
