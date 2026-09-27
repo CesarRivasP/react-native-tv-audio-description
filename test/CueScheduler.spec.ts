@@ -5,7 +5,9 @@ const cue = (id: string, start_ms: number, end_ms: number, over: Partial<Descrip
   id,
   start_ms,
   end_ms,
-  words: 10,
+  // one word: short enough to fit every window below, so these tests are about
+  // WHERE a cue fires; whether it fits is covered on its own further down
+  words: 1,
   text: 'something happens',
   audio_uri: `audio/${id}.m4a`,
   source_frames_ms: [start_ms + 100],
@@ -29,7 +31,7 @@ describe('CueScheduler.load', () => {
       cue('failed', 2_000, 3_000, { status: 'failed', audio_uri: '', text: '', words: 0 }),
       cue('noaudio', 4_000, 5_000, { audio_uri: '' }),
     ]);
-    s.tick(500);
+    s.tick(100);
     s.tick(2_500);
     s.tick(4_500);
     expect(fired).toEqual(['ok']);
@@ -90,6 +92,43 @@ describe('CueScheduler.tick — inside its own window or not at all', () => {
     s.load([cue('a', 1_000, 3_000)]);
     s.tick(3_000);
     expect(fired).toEqual([]);
+  });
+});
+
+describe('CueScheduler.tick — a cue fires only if it can finish in its gap', () => {
+  // Fails if: a cue reached late in its window still fires. Measured on the
+  // Vega Virtual Device: description switched back on 2.5 s before its window
+  // closed fired a 2.6 s cue, and the film came back up into the next line.
+  it('skips a cue reached with too little of its window left', () => {
+    const s = scheduler();
+    // 6 words: 2 250 ms of speech + 400 ms of fade = 2 650 ms needed
+    s.load([cue('late', 5_000, 10_000, { words: 6 })]);
+    s.tick(7_453); // 2 547 ms left
+    expect(fired).toEqual([]);
+  });
+
+  it('still fires a cue reached late if it fits what is left', () => {
+    const s = scheduler();
+    s.load([cue('late', 5_000, 10_000, { words: 6 })]);
+    s.tick(7_000); // 3 000 ms left
+    expect(fired).toEqual(['late']);
+  });
+
+  it('does not fire the skipped cue on a later tick either', () => {
+    const s = scheduler();
+    s.load([cue('late', 5_000, 10_000, { words: 6 }), cue('next', 12_000, 16_000)]);
+    s.tick(7_453);
+    s.tick(7_700);
+    s.tick(12_100);
+    expect(fired).toEqual(['next']);
+  });
+
+  it('takes a better estimate when the caller has one', () => {
+    fired.length = 0;
+    const s = new CueScheduler({ onFire: (c) => fired.push(c.id) }, { estimateMs: () => 500 });
+    s.load([cue('late', 5_000, 10_000, { words: 6 })]);
+    s.tick(9_000);
+    expect(fired).toEqual(['late']);
   });
 });
 

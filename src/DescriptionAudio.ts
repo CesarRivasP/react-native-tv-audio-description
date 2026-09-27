@@ -47,7 +47,12 @@ export class DescriptionAudio {
   }
 
   async speak(cue: DescriptionCue): Promise<void> {
-    if (this.active) return; // a cue already speaking is never interrupted by another
+    if (this.active) {
+      // a cue already speaking is never interrupted by another — but the one
+      // that lost is said out loud in the log, not dropped in silence
+      log(`audio.busy id=${cue.id}`);
+      return;
+    }
     this.active = true;
     const mine = this.generation;
     const stale = () => mine !== this.generation;
@@ -56,7 +61,7 @@ export class DescriptionAudio {
       log(`audio.duck id=${cue.id} to_pct=${this.duckPct}`);
       await rampVolumePct(this.media.video, 100, this.duckPct, this.rampMs, stale);
       await this.media.clips.play(cue.audio_uri);
-      log(`audio.spoke id=${cue.id} words=${cue.words}`);
+      log(stale() ? `audio.interrupted id=${cue.id}` : `audio.spoke id=${cue.id} words=${cue.words}`);
     } catch (err) {
       log(`audio.failed id=${cue.id} err=${(err as Error).message}`);
     } finally {
@@ -84,7 +89,9 @@ export class DescriptionAudio {
     // the duck level anyway would first SET it to the duck level: an audible
     // dip every time description is switched off between cues.
     if (!this.active) return;
+    log('audio.stopped');
     await rampVolumePct(this.media.video, this.duckPct, 100, this.rampMs);
     this.active = false;
+    log('audio.restored after=stop');
   }
 }

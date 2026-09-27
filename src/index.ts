@@ -21,7 +21,13 @@ export {
   wordTarget,
 } from './budget';
 
-export { CueScheduler, coalesce, type SchedulerEvents } from './CueScheduler';
+export {
+  CueScheduler,
+  coalesce,
+  estimateCueMs,
+  type SchedulerEvents,
+  type SchedulerOptions,
+} from './CueScheduler';
 export { DescriptionAudio, type DescriptionAudioOptions } from './DescriptionAudio';
 export { rampVolumePct } from './duck';
 export {

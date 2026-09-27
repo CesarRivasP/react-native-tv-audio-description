@@ -1,4 +1,5 @@
 import type { DescriptionCue } from './track';
+import { AD } from './budget';
 import { log } from './log';
 
 /**
@@ -14,13 +15,35 @@ export interface SchedulerEvents {
   onFire: (cue: DescriptionCue) => void;
 }
 
+export interface SchedulerOptions {
+  /**
+   * How long a cue needs, from firing to the film being back at full. A cue
+   * is only fired if that much of its window is left. Default: its words at
+   * the narration pace plus the fade down and up — pass a better figure if you
+   * have the clips' real durations.
+   */
+  estimateMs?: (cue: DescriptionCue) => number;
+}
+
+/** words at the narration pace, plus the fade down and the fade back up */
+export function estimateCueMs(cue: DescriptionCue): number {
+  return (cue.words / AD.SPEAKING_RATE_WPM) * 60_000 + 2 * AD.DUCK_RAMP_MS;
+}
+
 export class CueScheduler {
   private cues: DescriptionCue[] = [];
   private cursor = 0;
   private firing: DescriptionCue | null = null;
   private enabled = true;
 
-  constructor(private readonly events: SchedulerEvents) {}
+  private readonly estimateMs: (cue: DescriptionCue) => number;
+
+  constructor(
+    private readonly events: SchedulerEvents,
+    options: SchedulerOptions = {},
+  ) {
+    this.estimateMs = options.estimateMs ?? estimateCueMs;
+  }
 
   /** `failed` cues carry no audio; they never enter the schedule. */
   load(cues: DescriptionCue[]): void {
@@ -53,8 +76,22 @@ export class CueScheduler {
     const next = this.cues[this.cursor];
     if (!next) return;
 
-    // Fire only INSIDE the window. Never before it, never after it.
+    // Fire only INSIDE the window, and only if the cue can FINISH there. A cue
+    // reached late — description switched back on, a seek into the middle of a
+    // gap — would otherwise still be speaking when dialogue resumes. Measured
+    // on the Vega Virtual Device: switched on 2.5 s before its window closed, a
+    // 2.6 s cue brought the film back up half a second into the next line.
     if (positionMs >= next.start_ms && positionMs < next.end_ms && this.firing !== next) {
+      const remaining = next.end_ms - positionMs;
+      const needs = Math.round(this.estimateMs(next));
+      if (remaining < needs) {
+        this.cursor++;
+        log(
+          `scheduler.skip id=${next.id} pos_ms=${positionMs} reason=late` +
+            ` remaining_ms=${remaining} needs_ms=${needs}`,
+        );
+        return;
+      }
       this.firing = next;
       this.cursor++;
       log(
