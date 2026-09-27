@@ -5,7 +5,7 @@ What this library works around, and how each thing was found. Every entry was
 [Interstice](#where-these-come-from) on the Vega Virtual Device; none of it was
 in the platform documentation at the time.
 
-**Stack measured against:** Vega SDK 0.24, Vega CLI 1.3.4,
+**Stack measured against:** Vega SDK 0.24 (0.24.12112), Vega CLI 1.3.4,
 `@amazon-devices/react-native-w3cmedia` 2.3.2, React Native 0.83, the **Vega
 Virtual Device**. Nothing here has been re-measured on a physical Fire TV
 yet; the entries that can only be settled there say so.
@@ -117,6 +117,58 @@ is also no way to take a screenshot.
   tiny server on the host printing each request.
 - **Here:** the library writes nothing by default; `setLogger()` hands you
   every diagnostic line, and where they go is your app's decision.
+
+---
+
+## Found by running this package on the Virtual Device
+
+Measured 2026-09-27 with `example/vega`, on the stack above. None of these
+shows up in a unit test against a mock — each needed the device.
+
+### sourceopen_refires
+
+**`sourceopen` fires again after `endOfStream()`, whenever the buffer changes.**
+
+This one is the MSE specification, not a Vega defect: `appendBuffer()` or
+`remove()` on a source whose `readyState` is `ended` moves it back to `open`
+and fires `sourceopen` again. Evicting old media behind the playhead once the
+last segment is in does exactly that. A `sourceopen` handler that builds the
+`SourceBuffer` therefore runs twice. On the device that built a second buffer,
+re-appended the whole asset, evicted again, reopened again — a loop at the end
+of every film, with `endOfStream()` throwing *"exception when updating
+attribute is true"* as the two chains collided.
+
+- **Here:** the adapter handles `sourceopen` once per `open()`, and
+  `endOfStream()` is only called when no buffer operation is in flight.
+
+### coarse_timers
+
+**`setTimeout(fn, 16)` fires late.** A fade written as 13 steps of 16 ms took
+about **510 ms** instead of 200. With the fade down, the clip start and the
+fade back up all stretched, three of four cues brought the film back up after
+their window had closed — by up to 0.57 s.
+
+- **Here:** `rampVolumePct` sets each step's level from the time *elapsed*,
+  not from its step number, so the fade ends on time however late the timer
+  fires. Measured after the change: fades of 200–260 ms.
+
+### paused_never_ends
+
+**A paused `AudioPlayer` never emits `ended`.** Stopping a cue by pausing its
+clip player left the promise waiting for `ended` pending forever — so the
+player was never torn down: one leaked player per interrupted cue.
+
+- **Here:** `clips.stop()` settles the clip's promise itself, and teardown
+  (`deinitialize()`, ~120 ms on the device) runs without holding up the
+  restore of the film.
+
+### What a cue costs, end to end
+
+From the scheduler firing a cue to the film being back at full, on the
+Virtual Device with the changes above: **fade down + clip start 250–290 ms**,
+then the speech, then **fade up 200–260 ms**. `CueScheduler` will not fire a
+cue that its window cannot hold — reached late, say, because description was
+switched back on mid-gap — and skips it with a `reason=late` log line instead.
 
 ---
 

@@ -39,9 +39,10 @@ film volume  100% ─╮                ╭─ 100% ───╮           ╭�
 description        "A keeper climbs the stairs…" "Waves. An empty boat…"
 ```
 
-- **Fires a cue only inside its own gap.** A cue whose gap has already passed
-  is dropped, never played late: a late cue talks over dialogue, which is
-  worse than no description.
+- **Fires a cue only inside its own gap, and only if it can finish there.** A
+  cue whose gap has passed, or whose gap has too little left — description
+  switched back on mid-gap — is skipped, never played late: a late cue talks
+  over dialogue, which is worse than no description.
 - **Ducks, speaks, restores** — the film goes to 25% over a 200 ms fade, the
   clip plays as a second stream over it, and the film always comes back to
   100%, including when the clip fails and when the app is backgrounded.
@@ -87,15 +88,16 @@ import {
 import { createVegaAdapter } from 'react-native-tv-audio-description/vega';
 
 // Vega's player cannot be pointed at a path, but fetch can read a packaged file.
-const readJson = async (path: string): Promise<unknown> => (await fetch(path)).json();
+const fetchJson = async (path: string): Promise<unknown> => (await fetch(path)).json();
 
 interface PlayerProps {
   asset: AssetSource; // the film, cut into fragmented-MP4 segments
   trackDir: string; // where <assetId>.<verbosity>.track.json live
   assetId: string;
+  readJson?: (path: string) => Promise<unknown>; // how to read a track file
 }
 
-export function Player({ asset, trackDir, assetId }: PlayerProps) {
+export function Player({ asset, trackDir, assetId, readJson = fetchJson }: PlayerProps) {
   // One adapter, one audio layer, one scheduler per screen.
   const media = useMemo(() => createVegaAdapter(), []);
   const audio = useMemo(() => new DescriptionAudio(media), [media]);
@@ -140,7 +142,7 @@ export function Player({ asset, trackDir, assetId }: PlayerProps) {
       });
     });
     // `enabled` is applied separately below; reloading on a toggle is not needed
-  }, [media, scheduler, trackDir, assetId, verbosity]);
+  }, [media, scheduler, trackDir, assetId, verbosity, readJson]);
 
   const onToggle = (on: boolean) => {
     setEnabled(on);
@@ -158,7 +160,7 @@ export function Player({ asset, trackDir, assetId }: PlayerProps) {
 }
 ```
 
-This is [`example/vega/Player.tsx`](example/vega/Player.tsx), which
+This is [`example/vega/src/Player.tsx`](example/vega/src/Player.tsx), which
 `npm run typecheck` compiles against the library — if the API changes, this
 README's example stops compiling. A real screen will also want to say
 something on `media.video.onStalled` (and stop saying it on `onPlaying` —
@@ -292,15 +294,17 @@ Virtual Device — in [PLATFORM.md](PLATFORM.md).
 - **Unit tests** covering every component and the adapter against a
   mock of the platform package. `npm test`.
 - **The example** — end to end on a simulated adapter, self-checking.
-- **The code the Vega adapter was extracted from ran on the Vega Virtual
-  Device** inside Interstice: a segmented film appended in order and played,
-  cues played concurrently over it with the volume applied. This packaged
-  version adds options and a serialisation fix and has so far been verified
-  by its tests only; a device run of the package itself is next.
+- **On the Vega Virtual Device**, with [`example/vega`](example/vega): the
+  packaged library plays a segmented excerpt of Tears of Steel with four
+  cues, each firing inside its window, ducking to 25% and restoring before the
+  window closes; the remote switches description off mid-cue, on again, and
+  to `concise`. What those runs found — and fixed — is in
+  [PLATFORM.md § Found by running this package](PLATFORM.md#sourceopen_refires).
 - **Not yet verified, and needing a physical Fire TV:** that the duck is
   *audible* (the Virtual Device has no audio capture path), the controls under
-  VoiceView (it cannot be enabled on the Virtual Device), and buffer eviction
-  over a feature-length film (the test clip is shorter than the window).
+  VoiceView (it cannot be enabled on the Virtual Device), and the memory bound
+  over a feature-length film (eviction has run once, at the end of the 20 s
+  excerpt — not across a film long enough for the bound to matter).
 
 ## License
 
