@@ -3,6 +3,9 @@ import { AccessibilityInfo, Pressable, Text, View } from 'react-native';
 import type { Verbosity } from './track';
 import { VERBOSITY_LEVELS } from './track';
 import { log } from './log';
+import { stateMessage, type ADState } from './messages';
+
+export { stateMessage, type ADState } from './messages';
 
 /**
  * The remote surface, and every failure said out loud.
@@ -16,31 +19,12 @@ import { log } from './log';
  * state change.
  */
 
-export type ADState =
-  | { kind: 'ready'; enabled: boolean; verbosity: Verbosity; cues: number }
-  | { kind: 'missing'; detail: string }
-  | { kind: 'malformed'; detail: string };
-
 export interface ADControlsProps {
   state: ADState;
   onToggle: (enabled: boolean) => void;
   onVerbosity: (v: Verbosity) => void;
   /** hand focus here when the player screen mounts */
   focusRef?: React.Ref<View>;
-}
-
-/** every branch has a sentence, and the sentence is spoken, not only shown */
-export function stateMessage(state: ADState): string {
-  switch (state.kind) {
-    case 'ready':
-      return state.enabled
-        ? `Audio description on, ${state.verbosity}, ${state.cues} descriptions`
-        : 'Audio description off';
-    case 'missing':
-      return 'No description track was found for this title. Playback continues without description.';
-    case 'malformed':
-      return 'The description track for this title could not be read. Playback continues without description.';
-  }
 }
 
 export function ADControls({ state, onToggle, onVerbosity, focusRef }: ADControlsProps) {
