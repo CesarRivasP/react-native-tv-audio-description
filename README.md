@@ -7,12 +7,13 @@ three verbosity levels.
 Extracted from **Interstice**, an entry to the Amazon Developer Hackathon 2026
 (Fire TV track, Vega OS).
 
-> **Status: under construction.** The platform-agnostic core and its tests are
-> in `src/` and `test/`. The Vega adapter, the runnable example and the full
-> README with the platform findings are landing over the next days.
+> **Status: under construction.** The core, the Vega adapter (`./vega`), their
+> tests and a runnable example are in. The full README with the platform
+> findings is landing next.
 
 ```sh
 npm install
+npm run example   # a minute of film at 20x, checked as it plays — no device needed
 npm test
 ```
 

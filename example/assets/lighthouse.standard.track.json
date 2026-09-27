@@ -1,0 +1,82 @@
+{
+  "version": "1",
+  "asset_id": "lighthouse",
+  "generated_at": "2026-09-27T00:00:00.000Z",
+  "source_subtitles": "lighthouse.en.srt",
+  "verbosity": "standard",
+  "model_id": "example \u2014 hand-written for this demo, not model output",
+  "cues": [
+    {
+      "id": "c1",
+      "start_ms": 2000,
+      "end_ms": 6500,
+      "words": 10,
+      "text": "A lighthouse keeper climbs the spiral stairs, lantern in hand.",
+      "audio_uri": "audio/c1.standard.m4a",
+      "source_frames_ms": [
+        4250
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "c2",
+      "start_ms": 14000,
+      "end_ms": 19000,
+      "words": 11,
+      "text": "Below, waves break over black rocks. A small boat drifts, unmanned.",
+      "audio_uri": "audio/c2.standard.m4a",
+      "source_frames_ms": [
+        16500
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "c3",
+      "start_ms": 26000,
+      "end_ms": 30000,
+      "words": 9,
+      "text": "She finds the logbook, its last page torn out.",
+      "audio_uri": "audio/c3.standard.m4a",
+      "source_frames_ms": [
+        28000
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "c4",
+      "start_ms": 38000,
+      "end_ms": 43000,
+      "words": 10,
+      "text": "Fog swallows the beam. Somewhere below, a bell starts ringing.",
+      "audio_uri": "audio/c4.standard.m4a",
+      "source_frames_ms": [
+        40500
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "c5",
+      "start_ms": 47000,
+      "end_ms": 50000,
+      "words": 0,
+      "text": "",
+      "audio_uri": "",
+      "source_frames_ms": [
+        48500
+      ],
+      "status": "failed"
+    },
+    {
+      "id": "c6",
+      "start_ms": 52000,
+      "end_ms": 58000,
+      "words": 14,
+      "text": "The keeper descends, opens the door, and steps out into the grey morning light.",
+      "audio_uri": "audio/c6.standard.m4a",
+      "source_frames_ms": [
+        55000
+      ],
+      "status": "ok"
+    }
+  ]
+}

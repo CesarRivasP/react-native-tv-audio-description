@@ -1,0 +1,58 @@
+{
+  "version": "1",
+  "asset_id": "lighthouse",
+  "generated_at": "2026-09-27T00:00:00.000Z",
+  "source_subtitles": "lighthouse.en.srt",
+  "verbosity": "concise",
+  "model_id": "example \u2014 hand-written for this demo, not model output",
+  "cues": [
+    {
+      "id": "c1",
+      "start_ms": 2000,
+      "end_ms": 6500,
+      "words": 6,
+      "text": "A keeper climbs the lighthouse stairs.",
+      "audio_uri": "audio/c1.concise.m4a",
+      "source_frames_ms": [
+        4250
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "c2",
+      "start_ms": 14000,
+      "end_ms": 19000,
+      "words": 5,
+      "text": "Waves. An empty boat drifts.",
+      "audio_uri": "audio/c2.concise.m4a",
+      "source_frames_ms": [
+        16500
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "c4",
+      "start_ms": 38000,
+      "end_ms": 43000,
+      "words": 7,
+      "text": "Fog hides the beam. A bell rings.",
+      "audio_uri": "audio/c4.concise.m4a",
+      "source_frames_ms": [
+        40500
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "c6",
+      "start_ms": 52000,
+      "end_ms": 58000,
+      "words": 6,
+      "text": "The keeper steps out into morning.",
+      "audio_uri": "audio/c6.concise.m4a",
+      "source_frames_ms": [
+        55000
+      ],
+      "status": "ok"
+    }
+  ]
+}
