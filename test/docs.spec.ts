@@ -11,7 +11,7 @@ describe('the README', () => {
   it('shows exactly the usage example that the typecheck compiles', () => {
     const readme = read('README.md');
     const block = /## Usage[\s\S]*?```tsx\n([\s\S]*?)```/.exec(readme)?.[1];
-    const file = read('example/vega/Player.tsx').split('\n').slice(2).join('\n');
+    const file = read('example/vega/src/Player.tsx').split('\n').slice(2).join('\n');
     expect(block).toBe(file);
   });
 

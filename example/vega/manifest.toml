@@ -1,0 +1,108 @@
+# tvad example — Vega OS application manifest
+#
+# Media services are declared under [wants]. A missing one fails SILENTLY — no
+# video and no error (PLATFORM.md, "manifest services"). Service ids are taken
+# from Amazon's vega-video-sample. No DRM services: the asset is unencrypted.
+
+schema-version = 1
+
+[package]
+title = "tvad example"
+version = "0.1.0"
+id = "com.cesarrivasp.tvadexample"
+
+[os.version]
+min = "1.2"
+target = "1.2"
+
+[components]
+[[components.interactive]]
+id = "com.cesarrivasp.tvadexample.main"
+runtime-module = "/com.amazon.kepler.runtime.react_native_kepler_4@IReactNativeKepler_0"
+launch-type = "singleton"
+categories = ["com.amazon.category.main"]
+
+# ------------------------------------------------------------------------------
+# [needs] — required. The app cannot function without these.
+# ------------------------------------------------------------------------------
+[needs]
+
+[[needs.module]]
+id = "/com.amazon.vega.os@IVega_1_2"
+
+# Media playback.
+[[needs.privilege]]
+id = "com.amazon.media.secureplayback"
+
+# ------------------------------------------------------------------------------
+# [wants] — optional, with graceful fallback in app code.
+# ------------------------------------------------------------------------------
+
+[[needs.module]]
+id = "/com.amazon.kepler.keplerscript_4@IKeplerScript_0"
+
+[[needs.module]]
+id = "/com.amazon.kepler.kepler_media_controls_1@IKeplerMediaControls_0"
+
+[[needs.module]]
+id = "/com.amazon.kepler.keplermediadescriptor_1@IKeplermediadescriptor_1"
+
+[[needs.module]]
+id = "/com.amazon.kepler.w3cmedia_2@IW3cmedia_3"
+
+
+
+
+[wants]
+
+# MediaPlayer / MediaTransform — the W3C VideoPlayer surface.
+[[wants.service]]
+id = "com.amazon.media.server"
+
+[[wants.service]]
+id = "com.amazon.mediametrics.service"
+
+# MediaControls — player session and buffering.
+[[wants.service]]
+id = "com.amazon.media.playersession.service"
+
+[[wants.service]]
+id = "com.amazon.mediabuffer.service"
+
+[[wants.service]]
+id = "com.amazon.mediatransform.service"
+
+# Audio stream: the second, concurrent stream that speaks the description cues.
+[[wants.service]]
+id = "com.amazon.audio.stream"
+
+# Volume and other audio controls: the ducking itself.
+[[wants.service]]
+id = "com.amazon.audio.control"
+
+[[wants.service]]
+id = "com.amazon.audio.system"
+
+# Audio/video playback transport.
+[[wants.service]]
+id = "com.amazon.gipc.uuid.*"
+
+# Remote button events: D-pad navigation, the description toggle and the
+# verbosity selector.
+[[wants.service]]
+id = "com.amazon.inputd.service"
+
+# Accessibility: the control surface must be reachable and announced under VoiceView.
+[[wants.privilege]]
+id = "com.amazon.devconf.privilege.accessibility"
+
+# ------------------------------------------------------------------------------
+# [offers] — capabilities this package exposes to the system.
+# ------------------------------------------------------------------------------
+[offers]
+
+[[offers.service]]
+id = "com.amazon.gipc.uuid.*"
+
+[[offers.interaction]]
+id = "com.cesarrivasp.tvadexample.main"
