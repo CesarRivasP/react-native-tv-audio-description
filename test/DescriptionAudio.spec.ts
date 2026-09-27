@@ -157,6 +157,31 @@ describe('rampVolumePct — the fade the platform does not have', () => {
     for (let i = 1; i < v.length; i++) expect(v[i]!).toBeLessThanOrEqual(v[i - 1]!);
   });
 
+  // Fails if: the fade is counted in steps rather than in elapsed time. On the
+  // Vega Virtual Device timers fire late, and a 200 ms fade of 13 steps took
+  // ~510 ms — long enough to bring the film back after dialogue resumed.
+  it('finishes when rampMs has ELAPSED, even when every timer fires late', async () => {
+    // every timer fires no sooner than 50 ms, whatever it asked for
+    const fakeSetTimeout = global.setTimeout;
+    jest
+      .spyOn(global, 'setTimeout')
+      .mockImplementation(((fn: () => void, ms?: number) =>
+        fakeSetTimeout(fn, Math.max(ms ?? 0, 50))) as unknown as typeof setTimeout);
+
+    const media = fakeAdapter();
+    let done = false;
+    void rampVolumePct(media.video, 100, 25, 200).then(() => (done = true));
+    let elapsed = 0;
+    while (!done && elapsed < 2_000) {
+      await jest.advanceTimersByTimeAsync(10);
+      elapsed += 10;
+    }
+    jest.restoreAllMocks();
+    expect(done).toBe(true);
+    expect(elapsed).toBeLessThanOrEqual(250);
+    expect(media.video.volumes[media.video.volumes.length - 1]).toBe(25);
+  });
+
   it('stops stepping as soon as it is cancelled', async () => {
     const media = fakeAdapter();
     let cancelled = false;
