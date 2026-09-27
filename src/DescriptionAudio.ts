@@ -73,8 +73,16 @@ export class DescriptionAudio {
     }
   }
 
+  /**
+   * Stop the cue that is speaking, if any, and bring the film back to full.
+   * Safe to call at any time — turning description off, leaving the screen.
+   */
   async stop(): Promise<void> {
     this.generation++; // anything in flight is now stale and must not restore
+    // Nothing speaking means the film is already at full. Ramping "back" from
+    // the duck level anyway would first SET it to the duck level: an audible
+    // dip every time description is switched off between cues.
+    if (!this.active) return;
     this.media.clips.stop();
     await rampVolumePct(this.media.video, this.duckPct, 100, this.rampMs);
     this.active = false;

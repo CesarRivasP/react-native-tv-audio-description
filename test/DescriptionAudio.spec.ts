@@ -120,6 +120,16 @@ describe('DescriptionAudio — leaving the screen mid-cue', () => {
     expect(media.video.volumes).toHaveLength(afterStop);
   });
 
+  // Fails if: stop() ramps when nothing is speaking. The ramp starts FROM the
+  // duck level, so an idle stop() drops a film at full to 25% and back — a
+  // dip the viewer hears every time description is switched off between cues.
+  it('does not touch the volume when stop() is called with nothing speaking', async () => {
+    const media = fakeAdapter();
+    const audio = new DescriptionAudio(media, { rampMs: 0 });
+    await audio.stop();
+    expect(media.video.volumes).toEqual([]);
+  });
+
   it('ignores backgrounding when nothing is speaking', async () => {
     const media = fakeAdapter();
     new DescriptionAudio(media, { rampMs: 0 });
