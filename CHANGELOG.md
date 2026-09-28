@@ -12,6 +12,11 @@ A version cannot be published without its section here: `prepublishOnly` checks.
 
 ## [Unreleased]
 
+### Changed
+
+- `example/vega` installs the library from npm instead of a local tarball;
+  `npm run lib:local` keeps the tarball route for unreleased changes.
+
 ## [0.1.0] - 2026-09-27
 
 First release: the TV-side audio description layer extracted from

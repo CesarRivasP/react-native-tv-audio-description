@@ -12,14 +12,16 @@ repository root runs the same components in a terminal.
 
 ```sh
 # from this directory, with the Vega SDK set up (source ~/vega/env)
-npm run lib                   # pack the library from ../.. and install it here
-npm install
+npm install                   # the library comes from npm, like any app's would
 npm run build:release
 
 vega virtual-device start
 vega device install-app --packagePath build/aarch64-release/tvad-example-vega_aarch64.vpkg
 vega device launch-app --appName com.cesarrivasp.tvadexample.main
 ```
+
+To try unreleased changes to the library instead, `npm run lib:local` packs
+`../..` and installs that tarball over the published version.
 
 Vega has no readable JavaScript console, so the diagnostic lines come over
 HTTP. In a second terminal, before launching:

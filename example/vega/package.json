@@ -4,7 +4,7 @@
   "private": true,
   "description": "react-native-tv-audio-description on Vega OS: a 20 s excerpt of Tears of Steel with four description cues, from the remote.",
   "scripts": {
-    "lib": "cd ../.. && npm pack --pack-destination example/vega && cd example/vega && npm install ./react-native-tv-audio-description-0.1.0.tgz",
+    "lib:local": "cd ../.. && npm pack --pack-destination example/vega && cd example/vega && npm install --no-save ./react-native-tv-audio-description-*.tgz",
     "start": "react-native start",
     "build:debug": "react-native build-vega --build-type Debug",
     "build:release": "react-native build-vega --build-type Release",
@@ -15,7 +15,7 @@
     "@amazon-devices/react-native-w3cmedia": "~2.3.2",
     "react": "19.2.0",
     "react-native": "0.83.0",
-    "react-native-tv-audio-description": "file:react-native-tv-audio-description-0.1.0.tgz"
+    "react-native-tv-audio-description": "^0.1.0"
   },
   "devDependencies": {
     "@amazon-devices/kepler-cli-platform": "^0",

@@ -57,10 +57,8 @@ description        "A keeper climbs the stairs…" "Waves. An empty boat…"
 
 ## Install
 
-Not on npm yet — `0.1.0` is on its way. Until then, from GitHub:
-
 ```sh
-npm install github:CesarRivasP/react-native-tv-audio-description
+npm install react-native-tv-audio-description
 ```
 
 Peer dependencies: `react` ^19.2 and `react-native` ^0.83. For the Vega
