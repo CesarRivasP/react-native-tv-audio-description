@@ -11,7 +11,7 @@ vision model describes the frames, text-to-speech voices it. What was missing
 is the part that plays such a track **on a television**, where the media stack
 is not a browser's and a remote is the only input. That is this library.
 
-It was extracted from **Interstice**, an entry to the Amazon Developer
+It was extracted from **[Interstice](https://github.com/CesarRivasP/Interstice)**, an entry to the Amazon Developer
 Hackathon 2026 (Fire TV, Vega OS), and ships a **Vega OS adapter** along with
 the [platform findings](PLATFORM.md) it took to make one work.
 
