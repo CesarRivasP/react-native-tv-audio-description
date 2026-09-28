@@ -37,6 +37,7 @@
     "lib",
     "src",
     "PLATFORM.md",
+    "CHANGELOG.md",
     "LICENSE",
     "README.md"
   ],
@@ -49,6 +50,9 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "example": "tsx example/node/index.ts",
+    "release:check": "node scripts/check-release.mjs",
+    "version": "node scripts/check-release.mjs --changelog-only",
+    "prepublishOnly": "npm run release:check && npm run typecheck && npm test && npm run build",
     "prepare": "npm run build"
   },
   "peerDependencies": {

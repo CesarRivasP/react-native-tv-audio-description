@@ -306,6 +306,19 @@ Virtual Device — in [PLATFORM.md](PLATFORM.md).
   over a feature-length film (eviction has run once, at the end of the 20 s
   excerpt — not across a film long enough for the bound to matter).
 
+## Versions
+
+[Semantic Versioning](https://semver.org), recorded in
+[CHANGELOG.md](CHANGELOG.md). While the version is `0.x`, a minor release may
+change the API and says so under **Changed**; a patch release never does.
+Every published version is a tagged commit (`v0.1.0` …): `npm publish` refuses
+to run unless HEAD carries the tag, the tree is clean, the changelog has the
+version's section, and the typecheck, tests and build pass.
+
+To release: move the **Unreleased** notes under a new dated heading, then
+`npm version <major|minor|patch>` (which checks the changelog, commits and
+tags), `git push --follow-tags`, `npm publish`.
+
 ## License
 
 MIT © César Rivas

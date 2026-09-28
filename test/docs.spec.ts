@@ -23,3 +23,14 @@ describe('the README', () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe('the CHANGELOG', () => {
+  // Fails if: the version in package.json has no dated changelog section. The
+  // same rule stops `npm publish` (scripts/check-release.mjs); here it fails
+  // on the commit that bumps the version, rather than at publish time.
+  it('has a dated section for the version in package.json', () => {
+    const { version } = JSON.parse(read('package.json')) as { version: string };
+    const esc = version.replace(/\./g, '\\.');
+    expect(read('CHANGELOG.md')).toMatch(new RegExp(`^## \\[${esc}\\] - \\d{4}-\\d{2}-\\d{2}$`, 'm'));
+  });
+});
